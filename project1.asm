@@ -2,7 +2,7 @@
 	
 in_string:	.space	8
 num_arr:	.word	8
-newline:	.asciiz	"\n\n"
+newline:	.asciiz	"	"
 error_msg:	.asciiz	"\nInvalid hexadecimal number.\n"
 	
 	.text
@@ -32,7 +32,7 @@ main:
 	li $t8, -1		 	 #Character counter
 	add $t9, $t9, $0	 #Array Counter
 	
-	loop:
+loop:
 	lb $t0, 0($a0)	 		#Load the first character
 	beq	$zero, $t0, hex_val #End loop at end of string
 	beq	$s7, $t0, hex_val
@@ -56,4 +56,36 @@ main:
 	beq $t1, $zero, save_lower
 	beq $t2, $s0, save_upper
 
+
+save_num:
+	sub $t0, $t0, $s1
+	sw $t0, 0($a1)
+	
+	addi $a1, $a1, 4
+	addi $t8, $t8, 1
+	addi $a0, $a0, 1
+	
+	j loop
+	
+
+save_lower:
+	sub $t0, $t0, $s4
+	sw $t0, 0($a1)
+	
+	addi $a1, $a1, 4
+	addi $t8, $t8, 1
+	addi $a0, $a0, 1
+	
+	j loop
+	
+
+save_upper:
+	sub $t0, $t0, $s5
+	sw $t0, 0($a1)
+	
+	addi $a1, $a1, 4
+	addi $t8, $t8, 1
+	addi $a0, $a0, 1
+	
+	j loop
 	
