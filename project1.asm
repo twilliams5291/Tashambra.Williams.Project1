@@ -32,3 +32,28 @@ main:
 	li $t8, -1		 	 #Character counter
 	add $t9, $t9, $0	 #Array Counter
 	
+	loop:
+	lb $t0, 0($a0)	 		#Load the first character
+	beq	$zero, $t0, hex_val #End loop at end of string
+	beq	$s7, $t0, hex_val
+	
+	slt $t1, $t0, $s1	 #Check if character is less than '0'
+	beq  $t1, $s0, error #If so then throw an error and end
+	
+	slt $t1, $t0, $s2	 #Check if character is a letter
+	slti $t2, $t0, 58	 #Check if character is a number
+	bne $t1, $t2, error	 #If it is between letters and numbers then throw an error and end
+	
+	beq $t2, $s0, save_num	#Save number in array
+	
+	slti $t1, $t0, 103	 #Make sure character is less than or equal to 'g'
+	bne $t1, $s0, error	 #If not then throw an error and end
+	
+	slt $t1, $t0, $s3	 #Check if letter is lowercase
+	slti $t2, $t0, 71	 #Check if letter is uppercase
+	bne $t1, $t2, error	 #if neither then throw an error and end
+	
+	beq $t1, $zero, save_lower
+	beq $t2, $s0, save_upper
+
+	
