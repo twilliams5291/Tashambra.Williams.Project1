@@ -2,10 +2,11 @@
 	
 in_string:	.space	8
 num_arr:	.word	8
-newline:	.asciiz	"	"
-error_msg:	.asciiz	"\nInvalid hexadecimal number.\n"
+newline:	.asciiz	"\n"
+error_msg:	.asciiz	"Invalid hexadecimal number."
 	
 	.text
+	
 	
 main:
 	li $v0, 8			 #Read in string
@@ -13,9 +14,9 @@ main:
 	li $a1, 9			 #Limit to 8 characters + null character
 	syscall
 	
-	move $t0, $a0		#Save the string
-	la $a0, newline		#Save the address of the newline
-	li $v0, 4			#Print the newline for readability
+	move $t0, $a0		 #Save the string
+	la $a0, newline		 #Save the address of the newline
+	li $v0, 4			 #Print the newline for readability
 	syscall
 	
 	move $a0, $t0
@@ -31,11 +32,14 @@ main:
 	add $t5, $0, $0		 #Final number var
 	li $t8, -1		 	 #Character counter
 	add $t9, $t9, $0	 #Array Counter
+
 	
 loop:
 	lb $t0, 0($a0)	 		#Load the first character
 	beq	$zero, $t0, hex_val #End loop at end of string
 	beq	$s7, $t0, hex_val
+	li $t1, 32
+	beq $t1, $t0, ignore
 	
 	slt $t1, $t0, $s1	 #Check if character is less than '0'
 	beq  $t1, $s0, error #If so then throw an error and end
@@ -55,6 +59,10 @@ loop:
 	
 	beq $t1, $zero, save_lower
 	beq $t2, $s0, save_upper
+	
+ignore:
+	addi $a0, $a0, 1
+	j loop
 
 
 save_num:
@@ -88,4 +96,54 @@ save_upper:
 	addi $a0, $a0, 1
 	
 	j loop
+
+	
+hex_val:
+	beq $t8, $zero, end
+	lw $t0, 0($s6)
+	li $t1, 4
+	
+	mul $t1, $t1, $t8
+	sll $t2, $t0, $t1
+	add $t5, $t5, $t2
+	
+	addi $t8, $t8, -1
+	addi $s6, $s6, 4
+	
+	j hex_val
+	
+
+error:
+	la $a0, error_msg
+	li $v0, 4
+	syscall
+	
+	li $v0, 10
+	syscall
+
+
+end:
+	lw $t0, 0($s6)
+	add $t5, $t5, $t0
+	
+	add $a0, $t5, $zero
+	li $v0, 1
+	syscall
+	
+	li $v0, 10
+	syscall
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
