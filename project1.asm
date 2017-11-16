@@ -14,9 +14,9 @@ main:
 	li $a1, 9			 #Limit to 8 characters + null character
 	syscall
 	
-	move $t0, $a0		 #Save the string
-	la $a0, newline		 #Save the address of the newline
-	li $v0, 4			 #Print the newline for readability
+	move $t0, $a0
+	la $a0, newline
+	li $v0, 4
 	syscall
 	
 	move $a0, $t0
@@ -30,7 +30,7 @@ main:
 	la $s6, num_arr		 #Array of converted characters
 	li $s7, 10			 #Loop termination value
 	add $t5, $0, $0		 #Final number var
-	li $t8, -1		 	 #Character counter
+	li $t8, 0		 	 #Character counter
 	add $t9, $t9, $0	 #Array Counter
 
 	
@@ -38,6 +38,7 @@ loop:
 	lb $t0, 0($a0)	 		#Load the first character
 	beq	$zero, $t0, hex_val #End loop at end of string
 	beq	$s7, $t0, hex_val
+	beq $s6, $a0, hex_val
 	li $t1, 32
 	beq $t1, $t0, ignore
 	
@@ -60,12 +61,12 @@ loop:
 	beq $t1, $zero, save_lower
 	beq $t2, $s0, save_upper
 	
-ignore:
+ignore:					 #Ignore spaces and increment to next character in buffer
 	addi $a0, $a0, 1
 	j loop
 
 
-save_num:
+save_num:				 #Save number by subtracting 0 ascii value (0)
 	sub $t0, $t0, $s1
 	sw $t0, 0($a1)
 	
@@ -76,7 +77,7 @@ save_num:
 	j loop
 	
 
-save_lower:
+save_lower:				 #Save lowercase letter by subtracting 'a' ascii value (87)
 	sub $t0, $t0, $s4
 	sw $t0, 0($a1)
 	
@@ -87,7 +88,7 @@ save_lower:
 	j loop
 	
 
-save_upper:
+save_upper:				 #Save uppercase letter by subtracting 'A' ascii value (65)
 	sub $t0, $t0, $s5
 	sw $t0, 0($a1)
 	
@@ -98,39 +99,43 @@ save_upper:
 	j loop
 
 	
-hex_val:
-	beq $t8, $zero, end
-	lw $t0, 0($s6)
-	li $t1, 4
+hex_val:				 #Convert translated numbers to appropriate hexadecimal number
+	lw $t0, 0($s6)		 #Load first decimal number from array
+	beq $t8, $zero, end  #End the loop when we have gone through all the numbers
 	
-	mul $t1, $t1, $t8
-	sll $t2, $t0, $t1
-	add $t5, $t5, $t2
+	sll $t5, $t5, 4		 #Multiply whatever is in $t5 by 16
+	add $t5, $t5, $t0	 #Add the latest number from $t0 to $t5
+		
+	addi $t8, $t8, -1	 #Decrement the counter
+	addi $s6, $s6, 4	 #Go to next number in array (by byte)
 	
-	addi $t8, $t8, -1
-	addi $s6, $s6, 4
-	
-	j hex_val
+	j hex_val			 #Continue loop
 	
 
 error:
-	la $a0, error_msg
-	li $v0, 4
+	and $a0, $a0, $zero	 #Clear $a0
+	la $a0, error_msg	 #Load error message address into $a0
+	li $v0, 4			 #Print message
 	syscall
 	
-	li $v0, 10
+	li $v0, 10			 #Exit
 	syscall
 
 
 end:
-	lw $t0, 0($s6)
-	add $t5, $t5, $t0
+
+	li $t0, 10000		#Use 10000 to split $t5 to output the unsigned halves
+	divu $t5, $t0		#Divide $t5 by 10000
 	
-	add $a0, $t5, $zero
+	mflo $a0			#Print the upper bits represented as the quotient when dividing by 10000
 	li $v0, 1
 	syscall
 	
-	li $v0, 10
+	mfhi $a0			#Print the low bits represented as the remainder when dividing by 10000			
+	li $v0, 1
+	syscall
+	
+	li $v0, 10			#Exit
 	syscall
 	
 	
