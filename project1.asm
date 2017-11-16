@@ -1,9 +1,9 @@
 	.data
-	
-in_string:	.space	8
-num_arr:	.word	8
+
 newline:	.asciiz	"\n"
 error_msg:	.asciiz	"Invalid hexadecimal number."
+in_string:	.space	8
+num_arr:	.word	8
 	
 	.text
 	
@@ -31,14 +31,13 @@ main:
 	li $s7, 10			 #Loop termination value
 	add $t5, $0, $0		 #Final number var
 	li $t8, 0		 	 #Character counter
-	add $t9, $t9, $0	 #Array Counter
+	li $t9, 0
 
 	
 loop:
 	lb $t0, 0($a0)	 		#Load the first character
 	beq	$zero, $t0, hex_val #End loop at end of string
-	beq	$s7, $t0, hex_val
-	beq $s6, $a0, hex_val
+	beq	$s7, $t0, hex_val   #Check for new line
 	li $t1, 32
 	beq $t1, $t0, ignore
 	
@@ -63,7 +62,8 @@ loop:
 	
 ignore:					 #Ignore spaces and increment to next character in buffer
 	addi $a0, $a0, 1
-	j loop
+	beq $t8, $zero, loop
+	j error
 
 
 save_num:				 #Save number by subtracting 0 ascii value (0)
